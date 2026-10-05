@@ -4,12 +4,14 @@ from tripper import DCTERMS, EMMO, RDF, Session
 from tripper.datadoc import TableDoc, acquire, get_context, search
 
 
-# Load the session file. Here we use a file local file
+# Load the session file. Here we use a file local file.
+# The webapp should (by default) probably use the default session file
+# See https://emmc-asbl.github.io/tripper/latest/session/
 session = Session("session.yaml")
 
-print("Available graphs", session.get_names())
+print("Available triplestores:", session.get_names())
 
-# Get triplestore
+# Select triplestore
 ts = session.get_triplestore("MemKB")
 
 # Add additional prefixes
@@ -27,6 +29,7 @@ context = get_context(CONTEXT_URL, default_theme=None)
 
 
 # Search for all datasets by Armel
+# This is comes from the simple search widget
 criteria = {
     RDF.type: EMMO.Dataset,
     DCTERMS.creator: PERS.ArmelPerrotin,
@@ -40,6 +43,9 @@ dicts = [acquire(ts, iri, context=context) for iri in iris]
 
 # Create a table (this should eventually use tabular...)
 td = TableDoc.fromdicts(dicts, context=context)
+
+
+# This should be shown in the table view:
 
 # Result table headers
 print("Result table headers:", td.headers)
