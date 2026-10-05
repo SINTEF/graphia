@@ -1,0 +1,30 @@
+[project]
+name = "graphia"
+version = "0.1.0"
+description = "Webapp for viewing and exploring knowledge graphs"
+readme = "README.md"
+authors = [
+    { name = "Michele Brigadoi", email = "michele.brigadoi@unibo.it" },
+    { name = "Jesper Friis", email = "jesper.friis@sintef.no" },
+    { name = "Tor S. Haugland", email = "tor.haugland@sintef.no" },
+    { name = "Sylvain Gouttebroze", email = "sylvain.gouttebroze@sintef.no" },
+]
+requires-python = ">=3.12"
+dependencies = [
+    "tripper[datadoc] @ git+https://github.com/EMMC-ASBL/tripper.git@master",
+]
+
+[project.optional-dependencies]
+testing = [
+    "pytest==9.1.1",
+    "pytest-cov==7.1.0",
+]
+pre-commit = [
+    "graphia[testing]",
+    "pre-commit==4.6.2",
+    "pylint==4.0.8",
+]
+dev = [
+    "graphia[pre-commit]",
+    "virtualenvwrapper==6.1.1",
+]
