@@ -12,6 +12,3 @@ triplestores:
         iri: "https://w3id.org/emmo#"
         label_annotations: true
         check: true
-
-  GraphDBTest:
-    - "https://raw.githubusercontent.com/SINTEF/PhysMetDoc/refs/heads/main/context/context.json"
