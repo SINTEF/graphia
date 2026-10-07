@@ -19,7 +19,7 @@ PERS = ts.bind("pers", "https://www.ntnu.edu/physmet/people/")
 
 
 # Load JSON-LD context from PhysMet
-branch = "pattern-mappings"  # NB: This will soon change to master!
+branch = "main"  # NB: This will soon change to master!
 CONTEXT_URL = (
     "https://raw.githubusercontent.com/SINTEF/"
     f"physmet-data-documentation-templates/refs/heads/{branch}/"
