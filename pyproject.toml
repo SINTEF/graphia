@@ -28,3 +28,22 @@ dev = [
     "graphia[pre-commit]",
     "virtualenvwrapper==6.1.1",
 ]
+
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+
+[tool.hatch.build]
+include = [
+    "graphia",
+    "graphia/data/*.yaml",
+]
+
+# Explicitly tell Hatchling where your packages live
+#[tool.hatch.build.targets.wheel]
+#packages = ["graphia"]
+
+[tool.hatch.metadata]
+allow-direct-references = true
