@@ -1,5 +1,7 @@
 """Test Graphia"""
 
+# pylint: disable=invalid-name
+
 from tripper import RDF
 
 from graphia import Graphia
@@ -10,8 +12,9 @@ def test_registered_triplestores():
     gr = Graphia()
     assert gr.triplestore_names() == ["MemKB", "GraphDBTest"]
 
+
 def test_load_triplestore():
-    """ Test load_triplestore() method."""
+    """Test load_triplestore() method."""
     gr = Graphia()
     gr.load_triplestore()
 

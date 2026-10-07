@@ -1,13 +1,11 @@
 """Webapp for viewing and exploring knowledge graphs."""
 
-import contextlib
 from pathlib import Path
 from typing import Optional
 
 import yaml
-
 from tripper import Namespace, Session, Triplestore
-from tripper.datadoc import Context, TableDoc, acquire, search
+from tripper.datadoc import Context
 
 
 class ConfigError(Exception):
@@ -15,8 +13,7 @@ class ConfigError(Exception):
 
 
 class Graphia:
-    """
-    """
+    """Main class for the Graphia webapp."""
 
     def __init__(self) -> None:
         self.ts: Optional[Triplestore] = None

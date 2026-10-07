@@ -1,9 +1,9 @@
 """Test Graphia utility functions."""
 
+from tripper import DCTERMS, EMMO
+
 from graphia import Graphia
 from graphia.utils import simplify_uris, update_sparql_query
-
-from tripper import DCTERMS, EMMO
 
 
 def test_update_sparql_query():

@@ -1,8 +1,7 @@
-from pathlib import Path
+"""Example use of tripper"""
 
 from tripper import DCTERMS, EMMO, RDF, Session
 from tripper.datadoc import TableDoc, acquire, get_context, search
-
 
 # Load the session file. Here we use a file local file.
 # The webapp should (by default) probably use the default session file
@@ -19,10 +18,9 @@ PERS = ts.bind("pers", "https://www.ntnu.edu/physmet/people/")
 
 
 # Load JSON-LD context from PhysMet
-branch = "main"  # NB: This will soon change to master!
 CONTEXT_URL = (
     "https://raw.githubusercontent.com/SINTEF/"
-    f"physmet-data-documentation-templates/refs/heads/{branch}/"
+    "physmet-data-documentation-templates/refs/heads/main/"
     "context/context.json"
 )
 context = get_context(CONTEXT_URL, default_theme=None)
@@ -51,4 +49,4 @@ td = TableDoc.fromdicts(dicts, context=context)
 print("Result table headers:", td.headers)
 
 # Result table data
-#print("Result table data:", td.data)
+# print("Result table data:", td.data)

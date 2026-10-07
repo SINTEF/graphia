@@ -41,9 +41,29 @@ include = [
     "graphia/data/*.yaml",
 ]
 
-# Explicitly tell Hatchling where your packages live
-#[tool.hatch.build.targets.wheel]
-#packages = ["graphia"]
-
 [tool.hatch.metadata]
 allow-direct-references = true
+
+[tool.pylint.messages_control]
+disable = ["too-few-public-methods", "redefined-builtin"]
+
+[tool.black]
+line-length = 79
+
+[tool.ruff]
+line-length = 79
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM"]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+
+[tool.ruff.lint.isort]
+known-first-party = [
+    "extract_prefixes",
+    "oold_converter",
+    "tabular",
+    "treeweaver",
+]

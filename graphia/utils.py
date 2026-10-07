@@ -3,6 +3,8 @@
 import re
 from typing import Sequence
 
+from graphia import Graphia
+
 
 def update_sparql_query(gr: Graphia, query: str) -> str:
     """Update SPARQL query `query` by translating all prefixes that needs
@@ -20,12 +22,13 @@ def update_sparql_query(gr: Graphia, query: str) -> str:
         a blank.
 
     """
+
     def translate(m):
         prefix, name = m.groups()
         return gr.prefixes[prefix][name]
 
-    for prefix, ns in gr.prefixes.items():
-        query = re.sub(fr"({prefix}):(\S+)", translate, query)
+    for prefix in gr.prefixes:
+        query = re.sub(rf"({prefix}):(\S+)", translate, query)
 
     return query
 
@@ -44,9 +47,9 @@ def simplify_uris(gr: Graphia, uris: Sequence) -> list:
                     retval.append(f"{prefix}:{ns(uri)}")
                     break
             else:
-                retval.append(gr.context.prefixed(uri))
+                retval.append(gr.context.prefixed(uri))  # type: ignore
         elif isinstance(uri, Sequence):
-            retval.append(simplify_uris(uri))
+            retval.append(simplify_uris(gr, uri))  # type: ignore[arg-type]
         else:
             raise TypeError(
                 "Elements in `uris` must be either strings or sequences. "
