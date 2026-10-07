@@ -10,4 +10,13 @@ Create a virtual environment
 
 Install Graphia
 
-    pip install -e .
+    pip install .
+
+
+## For developers
+Developers should install pre-commit such that the code can be checked before
+it is committed to GitHub.
+That can be done with:
+
+    pip install -e .[pre-commit]
+    pre-commit install
