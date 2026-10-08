@@ -33,26 +33,26 @@ def update_sparql_query(gr: Graphia, query: str) -> str:
     return query
 
 
-def simplify_uris(gr: Graphia, uris: Sequence) -> list:
-    """Convert all URIs in the (possible nested) sequence `uris` to CURIEs.
+def simplify_iris(gr: Graphia, iris: Sequence) -> list:
+    """Convert all IRIs in the (possible nested) sequence `iris` to CURIEs.
 
-    For prefixes to namespaces that needs translations, URIs will be
+    For prefixes to namespaces that needs translations, IRIs will be
     translated to simple (formally invalid) human readable CURIEs.
     """
     retval = []
-    for uri in uris:
-        if isinstance(uri, str):
+    for iri in iris:
+        if isinstance(iri, str):
             for prefix, ns in gr.prefixes.items():
-                if uri.startswith(str(ns)):
-                    retval.append(f"{prefix}:{ns(uri)}")
+                if iri.startswith(str(ns)):
+                    retval.append(f"{prefix}:{ns(iri)}")
                     break
             else:
-                retval.append(gr.context.prefixed(uri))  # type: ignore
-        elif isinstance(uri, Sequence):
-            retval.append(simplify_uris(gr, uri))  # type: ignore[arg-type]
+                retval.append(gr.context.prefixed(iri))  # type: ignore
+        elif isinstance(iri, Sequence):
+            retval.append(simplify_iris(gr, iri))  # type: ignore[arg-type]
         else:
             raise TypeError(
-                "Elements in `uris` must be either strings or sequences. "
-                f"Got: {type(uri)}"
+                "Elements in `iris` must be either strings or sequences. "
+                f"Got: {type(iri)}"
             )
     return retval

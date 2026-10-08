@@ -3,7 +3,7 @@
 from tripper import DCTERMS, EMMO
 
 from graphia import Graphia
-from graphia.utils import simplify_uris, update_sparql_query
+from graphia.utils import simplify_iris, update_sparql_query
 
 
 def test_update_sparql_query():
@@ -18,8 +18,8 @@ def test_update_sparql_query():
     )
 
 
-def test_simplify_uris():
-    """Test simplify_uris()."""
+def test_simplify_iris():
+    """Test simplify_iris()."""
     gr = Graphia()
-    uris = [DCTERMS.creator, EMMO.Dataset]
-    assert simplify_uris(gr, uris) == ["dcterms:creator", "emmo:Dataset"]
+    iris = [DCTERMS.creator, EMMO.Dataset]
+    assert simplify_iris(gr, iris) == ["dcterms:creator", "emmo:Dataset"]
