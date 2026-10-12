@@ -25,7 +25,7 @@ def update_sparql_query(gr: Graphia, query: str) -> str:
 
     def translate(m):
         prefix, name = m.groups()
-        return gr.prefixes[prefix][name]
+        return f"<{gr.prefixes[prefix][name]}>"
 
     for prefix in gr.prefixes:
         query = re.sub(rf"({prefix}):(\S+)", translate, query)

@@ -13,7 +13,7 @@ def test_update_sparql_query():
     new = update_sparql_query(gr, query)
     assert new == (
         "SELECT ?s WHERE { ?s a "
-        "https://w3id.org/emmo#EMMO_194e367c_9783_4bf5_96d0_9ad597d48d9a"
+        "<https://w3id.org/emmo#EMMO_194e367c_9783_4bf5_96d0_9ad597d48d9a>"
         " }"
     )
 
