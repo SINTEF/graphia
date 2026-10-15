@@ -1,7 +1,8 @@
 """Webapp for viewing and exploring knowledge graphs."""
 
+import re
 from pathlib import Path
-from typing import Optional
+from typing import Optional, Sequence
 
 import yaml
 from tripper import Namespace, Session, Triplestore
@@ -72,3 +73,64 @@ class Graphia:
         self.ts = ts
         self.context = context
         self.prefixes = prefixes
+
+    def update_sparql_query(self, query: str) -> str:
+        """Update SPARQL query `query` by translating all prefixes that needs
+        translations.
+
+
+        Examples:
+            A CURIE `emmo:Atom` in `query` will e.g. be replaced with
+
+                <https://w3id.org/emmo#EMMO_eb77076b_a104_42ac_a065_798b2d2809ad>
+
+        Notes:
+            This functions assumes that `query` is well-formatted,
+            i.e. all CURIEs that should be translated are terminated with
+            a blank.
+
+        """
+
+        def translate(m):
+            prefix, name = m.groups()
+            return f"<{self.prefixes[prefix][name]}>"
+
+        for prefix in self.prefixes:
+            query = re.sub(rf"(?<=\s)({prefix}):(\S+)", translate, query)
+
+        return query
+
+    def simplify_iris(self, iris: Sequence) -> list:
+        """Convert all IRIs in the (possible nested) sequence `iris` to CURIEs.
+
+        For prefixes to namespaces that needs translations, IRIs will be
+        translated to simple (formally invalid) human readable CURIEs.
+        """
+        retval = []
+        for iri in iris:
+            if isinstance(iri, str):
+                for prefix, ns in self.prefixes.items():
+                    if iri.startswith(str(ns)):
+                        retval.append(f"{prefix}:{ns(iri)}")
+                        break
+                else:
+                    retval.append(self.context.prefixed(iri))  # type: ignore
+            elif isinstance(iri, Sequence):
+                retval.append(self.simplify_iris(iri))  # type: ignore
+            else:
+                raise TypeError(
+                    "Elements in `iris` must be either strings or sequences. "
+                    f"Got: {type(iri)}"
+                )
+        return retval
+
+    def query(self, query: str) -> list:
+        """Execute SPARQL query.
+
+        The query is translated from human readable form and the results to
+        human readable form.
+        """
+
+        updated = self.update_sparql_query(query)
+        result = self.ts.query(updated)  # type: ignore
+        return self.simplify_iris(result)

@@ -5,6 +5,11 @@ MemKB:
   # Path or URL to where to load initial graph from
   triplestore_url: examples/kb.ttl
 
+PhysMetKG:
+  backend: rdflib
+  # Path or URL to where to load initial graph from
+  triplestore_url: "https://raw.githubusercontent.com/SINTEF/PhysMetKnowledgeGraph/refs/heads/main/kg.ttl"
+
 GraphDBTest:
   backend: sparqlwrapper
   base_iri: http://localhost:7200/repositories/test_repo
