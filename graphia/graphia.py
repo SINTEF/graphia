@@ -19,7 +19,7 @@ class Graphia:
     """Main class for the Graphia webapp."""
 
     def __init__(self) -> None:
-        self.ts: Optional[Triplestore] = None
+        self.ts: Triplestore = None
 
         # Name of currently selected triplestore
         self.triplestore_name: Optional[str] = None
@@ -28,7 +28,7 @@ class Graphia:
         # Only required for namespaces that need translations (e.g. emmo)
         self.prefixes: dict[str, Namespace] = {}
 
-        self.context: Optional[Context] = None
+        self.context: Context = None
 
         self.datadir = Path(__file__).resolve().parent / "data"
 
@@ -115,7 +115,7 @@ class Graphia:
         For prefixes to namespaces that needs translations, IRIs will be
         translated to simple (formally invalid) human readable CURIEs.
         """
-        retval = []
+        retval: list = []
         for iri in iris:
             if iri is None:
                 retval.append(iri)
@@ -130,7 +130,7 @@ class Graphia:
                     else:
                         retval.append(self.context.prefixed(iri, strict=False))
             elif isinstance(iri, Sequence):
-                retval.append(self.simplify_iris(iri))  # type: ignore
+                retval.append(self.simplify_iris(iri))
             else:
                 raise TypeError(
                     "Elements in `iris` must be either strings or sequences. "
@@ -145,7 +145,7 @@ class Graphia:
         human readable form.
         """
         updated = self.update_sparql_query(query)
-        result = self.ts.query(updated)  # type: ignore
+        result = self.ts.query(updated)
         return self.simplify_iris(result)
 
     def search(
@@ -156,6 +156,7 @@ class Graphia:
         flags: Optional[str] = None,
         skipblanks: bool = True,
     ) -> Table:
+        # pylint: disable=line-too-long
         """Return a list of IRIs for all matching resources.
 
         Arguments:
@@ -172,8 +173,9 @@ class Graphia:
             flags: Flags passed to regular expressions.
                 - `s`: Dot-all mode. The . matches any character.  The default
                   doesn't match newline or carriage return.
-                - `m`: Multi-line mode. The ^ and $ characters matches beginning
-                  or end of line instead of beginning or end of string.
+                - `m`: Multi-line mode. The ^ and $ characters matches
+                  beginning or end of line instead of beginning or end of
+                  string.
                 - `i`: Case-insensitive mode.
                 - `q`: Special characters representing themselves.
             skipblanks: Whether to skip blank nodes.
