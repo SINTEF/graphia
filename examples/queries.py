@@ -18,30 +18,57 @@ gr.ts.parse(kgpath)  # type: ignore
 gr.context.sync_prefixes(gr.ts, update=False)  # type: ignore
 
 
-# What alloy designations and tempers do we have results from
-
-
 # List all measurements with Grand ARM
 criteria = {
     "rdf:type": "emmo:Measurement", "emmo:hasInterpreter": "nortem:GARM300F2"
 }
-table = gr.search(criteria=criteria)
+table1 = gr.search(criteria=criteria)
+print()
+print("IRI of experiments done with Grand ARM:")
+for iri in table1["@id"]:
+    print("  -", iri)
+
+
+# What alloy designations and tempers do we have results from?
+table2 = gr.query("""
+SELECT DISTINCT ?designation ?temper WHERE {
+  ?sample micro:alloyDesignation ?designation .
+  ?sample micro:temper ?temper .
+  ?measurement emmo:hasInput ?sample .
+}
+""")
+print()
+print("Alloy designations and tempers we have results for:")
+print(table2)
 
 
 # Who have been doint these measurements?
-# Visible in the table
-
-
-
-
-# List all registered operators of Grand ARM
-q1 = """
-SELECT ?m WHERE {
-  ?m emmo:hasInterpreter nortem:GARM300F2 .
+table3 = gr.query("""
+SELECT DISTINCT ?designation ?temper ?operator WHERE {
+  ?sample micro:alloyDesignation ?designation .
+  ?sample micro:temper ?temper .
+  ?measurement emmo:hasInput ?sample .
+  ?measurement chameo:hasOperator ?b .
+  ?b emmo:isTemporalPartOf ?operator .
 }
-"""
-r1 = gr.query(q1)
+""")
 print()
-print("Registered users of Grand ARM:")
-for (iri,) in r1:
-    print("  -", iri)
+print("Who has been doing these experiments:")
+print(table3)
+
+
+# Where can I download the results
+table4 = gr.query("""
+SELECT DISTINCT ?workflow ?designation ?temper ?url WHERE {
+  ?sample micro:alloyDesignation ?designation .
+  ?sample micro:temper ?temper .
+  ?workflow emmo:hasInput ?sample .
+  ?workflow a emmo:Workflow .
+  #?workflow emmo:hasOutput ?dataset .
+  #?dataset dcat:distribution ?distribution .
+  #?distribution dcat:accessURL ?url .
+}
+""")
+print()
+print("Alloy designations and tempers we have results for:")
+print(table4)

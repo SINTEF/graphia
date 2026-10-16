@@ -1,8 +1,9 @@
 """Webapp for viewing and exploring knowledge graphs."""
 
+import os
 import re
 from pathlib import Path
-from typing import Optional, Sequence
+from typing import Mapping, Optional, Sequence
 
 import yaml
 from tabular import Table
@@ -11,14 +12,28 @@ from tripper.datadoc import Context, TableDoc, acquire
 from tripper.datadoc.dataset import make_query
 
 
+PathType = str | Path
+
 class ConfigError(Exception):
     """Configuration error."""
 
 
 class Graphia:
-    """Main class for the Graphia webapp."""
+    """Main class for the Graphia webapp.
 
-    def __init__(self) -> None:
+    Configurations are loaded the files
+
+      - default_session.yaml
+      - default_settings.yaml
+
+    in `confdir`.
+
+    If `confdir` is None, the environment variable GRAPHIA_CONFDIR is
+    checked. If that is not set, `confdir` defaults to ~/.config/graphia/.
+
+    """
+
+    def __init__(self, confdir: Optional[PathType] = None) -> None:
         self.ts: Triplestore = None
 
         # Name of currently selected triplestore
@@ -30,12 +45,19 @@ class Graphia:
 
         self.context: Context = None
 
-        self.datadir = Path(__file__).resolve().parent / "data"
+        if not confdir:
+            confdir = os.environ.get("GRAPHIA_CONFDIR")
+        if not confdir:
+            confdir = Path.home() / ".config" / "graphia"
+        if not confdir.exists():
+            confdir = Path(__file__).resolve().parent / "data"
 
-        configfile = self.datadir / "default_session.yaml"
+        self.confdir = confdir
+
+        configfile = self.confdir / "default_session.yaml"
         self.session = Session(configfile)
 
-        settingsfile = self.datadir / "default_settings.yaml"
+        settingsfile = self.confdir / "default_settings.yaml"
         with open(settingsfile, encoding="utf-8") as f:
             self.settings = yaml.safe_load(f)
 
@@ -120,7 +142,7 @@ class Graphia:
             if iri is None:
                 retval.append(iri)
             elif isinstance(iri, str):
-                if iri.startswith("_:"):
+                if iri.startswith("_:") or iri.startswith("@"):
                     retval.append(iri)  # don't try to simplify blank nodes
                 else:
                     for prefix, ns in self.prefixes.items():
@@ -131,6 +153,11 @@ class Graphia:
                         retval.append(self.context.prefixed(iri, strict=False))
             elif isinstance(iri, Sequence):
                 retval.append(self.simplify_iris(iri))
+            elif isinstance(iri, Mapping):
+                keys = self.simplify_iris(iri.keys())
+                values = self.simplify_iris(iri.values())
+                d = {k: v for k, v in zip(keys, values)}
+                retval.append(d)
             else:
                 raise TypeError(
                     "Elements in `iris` must be either strings or sequences. "
@@ -145,6 +172,7 @@ class Graphia:
         human readable form.
         """
         updated = self.update_sparql_query(query)
+        print("***", updated)
         result = self.ts.query(updated)
         headers = []
         if result:
