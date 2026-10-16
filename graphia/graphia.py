@@ -146,8 +146,13 @@ class Graphia:
                     retval.append(iri)  # don't try to simplify blank nodes
                 else:
                     for prefix, ns in self.prefixes.items():
+                        print("-", prefix, ns, ":", iri)
                         if iri.startswith(str(ns)):
                             retval.append(f"{prefix}:{ns(iri)}")
+                            break
+                        if iri.startswith(f"{prefix}:"):
+                            fulliri = f"{ns}{iri[len(prefix)+1:]}"
+                            retval.append(f"{prefix}:{ns(fulliri)}")
                             break
                     else:
                         retval.append(self.context.prefixed(iri, strict=False))
