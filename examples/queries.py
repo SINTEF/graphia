@@ -59,15 +59,22 @@ print(table3)
 
 # Where can I download the results (only show .png files)
 table4 = gr.query("""
-SELECT DISTINCT ?measurement ?designation ?temper ?url WHERE {
-  ?sample micro:alloyDesignation ?designation .
-  ?sample micro:temper ?temper .
-  ?measurement emmo:hasInput ?sample .
-  ?measurement a emmo:Measurement .
-  ?measurement emmo:hasOutput ?dataset .
-  ?dataset dcat:distribution ?distribution .
-  ?distribution dcat:downloadURL ?url .
-  ?distribution dcterms:format "png" .
+SELECT ?measurement ?designation ?temper ?url
+WHERE {
+  {
+    SELECT ?dataset ?url
+    WHERE {
+      ?dataset dcat:distribution ?distribution .
+      ?distribution dcterms:format "png" ;
+                    dcat:downloadURL ?url .
+    }
+  }
+
+  ?measurement emmo:hasOutput ?dataset ;
+               emmo:hasInput ?sample .
+
+  ?sample micro:alloyDesignation ?designation ;
+          micro:temper ?temper .
 }
 """)
 print()

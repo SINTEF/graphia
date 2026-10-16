@@ -172,7 +172,6 @@ class Graphia:
         human readable form.
         """
         updated = self.update_sparql_query(query)
-        print("***", updated)
         result = self.ts.query(updated)
         headers = []
         if result:
