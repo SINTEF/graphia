@@ -132,6 +132,48 @@ class Graphia:
 
         return query
 
+    def all_iris(self) -> (dict, dict):
+        """Return two dicts.
+
+        The first maps subject IRIs to human CURIEs.
+        The second maps predicate IRIs to human CURIEs.
+        """
+        irinames = {}  # maps IRIs to names
+        for prefix, ns in self.prefixes.items():
+            if isinstance(ns, Namespace):
+                ns._update_iris(
+                    triplestore=ns._triplestore,
+                    reload=ns._reload,
+                    format=ns._format,
+                )
+                for name, iri in ns._iris.items():
+                    irinames.setdefault(iri, f"{prefix}:{name}")
+
+        subj, pred = {}, {}
+        for s, p, _ in self.ts.triples():
+            if s.startswith("_:"):
+                pass
+            elif s in irinames:
+                subj[s] = irinames[s]
+            else:
+                for prefix, ns in self.ts.namespaces.items():
+                    if s.startswith(str(ns)):
+                        subj[s] = f"{prefix}:{s[len(ns):]}"
+                        break
+                else:
+                    subj[s] = s
+            if p in irinames:
+                pred[p] = irinames[p]
+            else:
+                for prefix, ns in self.ts.namespaces.items():
+                    if p.startswith(str(ns)):
+                        pred[p] = f"{prefix}:{p[len(ns):]}"
+                        break
+                else:
+                    pred[p] = p
+
+        return subj, pred
+
     def simplify_iris(self, iris: Iterable) -> list:
         """Convert all IRIs in the (possible nested) sequence `iris` to CURIEs.
 
@@ -146,21 +188,12 @@ class Graphia:
                 if iri.startswith("_:") or iri.startswith("@"):
                     retval.append(iri)  # don't try to simplify blank nodes
                 else:
-                    try:
-                        for prefix, ns in self.prefixes.items():
-                            if iri.startswith(str(ns)):
-                                retval.append(f"{prefix}:{ns(iri)}")
-                                break
-                            if iri.startswith(f"{prefix}:"):
-                                fulliri = f"{ns}{iri[len(prefix)+1:]}"
-                                retval.append(f"{prefix}:{ns(fulliri)}")
-                                break
-                        else:
-                            retval.append(
-                                self.context.prefixed(iri, strict=False)
-                            )
-                    except NoSuchIRIError:
-                        retval.append(iri)
+                    for prefix, ns in self.prefixes.items():
+                        if iri.startswith(str(ns)):
+                            retval.append(f"{prefix}:{ns(iri)}")
+                            break
+                    else:
+                        retval.append(self.context.prefixed(iri, strict=False))
             elif isinstance(iri, Sequence):
                 retval.append(self.simplify_iris(iri))
             elif isinstance(iri, Mapping):

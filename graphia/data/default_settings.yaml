@@ -11,6 +11,7 @@ triplestores:
       emmo:
         iri: "https://w3id.org/emmo#"
         label_annotations: true
+        triplestore: "https://w3id.org/emmo/1.0.4#"
         check: true
 
   PhysMetKG:
