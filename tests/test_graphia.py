@@ -52,3 +52,21 @@ def test_simplify_iris():
     gr = Graphia()
     iris = [DCTERMS.creator, EMMO.Dataset]
     assert gr.simplify_iris(iris) == ["dcterms:creator", "emmo:Dataset"]
+
+
+def test_query():
+    """Test query() method."""
+    gr = Graphia()
+    query = "SELECT ?s WHERE { ?s a emmo:Dataset }"
+    result = gr.query(query)
+    assert ["arp:data-EDS-ARP003"] in result
+
+
+def test_search():
+    """Test search() method."""
+    gr = Graphia()
+    table = gr.search(
+        type="emmo:Dataset", criteria={"dcterms:creator": "pers:ArmelPerrotin"}
+    )
+    assert len(table.headers) == 13
+    assert len(table.rows) == 31

@@ -5,8 +5,10 @@ from pathlib import Path
 from typing import Optional, Sequence
 
 import yaml
+from tabular import Table
 from tripper import Namespace, Session, Triplestore
-from tripper.datadoc import Context
+from tripper.datadoc import Context, TableDoc, acquire
+from tripper.datadoc.dataset import make_query
 
 
 class ConfigError(Exception):
@@ -63,6 +65,7 @@ class Graphia:
         context = Context(theme=None)
         for ctx in conf.get("context", ()):
             context.add_context(ctx)
+        context.sync_prefixes(ts, update=False)
 
         prefixes = {}
         for prefix, args in conf.get("translated_namespaces", {}).items():
@@ -90,13 +93,19 @@ class Graphia:
             a blank.
 
         """
+        namespaces = {str(ns): ns for ns in self.prefixes.values()}
 
         def translate(m):
             prefix, name = m.groups()
             return f"<{self.prefixes[prefix][name]}>"
 
-        for prefix in self.prefixes:
+        def translate2(m):
+            ns, name = m.groups()
+            return f"<{namespaces[ns][name]}>"
+
+        for prefix, ns in self.prefixes.items():
             query = re.sub(rf"(?<=\s)({prefix}):(\S+)", translate, query)
+            query = re.sub(rf"<({ns})([^>]*)>", translate2, query)
 
         return query
 
@@ -108,13 +117,18 @@ class Graphia:
         """
         retval = []
         for iri in iris:
-            if isinstance(iri, str):
-                for prefix, ns in self.prefixes.items():
-                    if iri.startswith(str(ns)):
-                        retval.append(f"{prefix}:{ns(iri)}")
-                        break
+            if iri is None:
+                retval.append(iri)
+            elif isinstance(iri, str):
+                if iri.startswith("_:"):
+                    retval.append(iri)  # don't try to simplify blank nodes
                 else:
-                    retval.append(self.context.prefixed(iri))  # type: ignore
+                    for prefix, ns in self.prefixes.items():
+                        if iri.startswith(str(ns)):
+                            retval.append(f"{prefix}:{ns(iri)}")
+                            break
+                    else:
+                        retval.append(self.context.prefixed(iri, strict=False))
             elif isinstance(iri, Sequence):
                 retval.append(self.simplify_iris(iri))  # type: ignore
             else:
@@ -130,7 +144,93 @@ class Graphia:
         The query is translated from human readable form and the results to
         human readable form.
         """
-
         updated = self.update_sparql_query(query)
         result = self.ts.query(updated)  # type: ignore
         return self.simplify_iris(result)
+
+    def search(
+        self,
+        type: Optional[str] = None,
+        criteria: Optional[dict] = None,
+        regex: Optional[dict] = None,
+        flags: Optional[str] = None,
+        skipblanks: bool = True,
+    ) -> Table:
+        """Return a list of IRIs for all matching resources.
+
+        Arguments:
+            type: Either a [resource type] (ex: "Dataset", "Distribution", ...)
+                or the IRI of a class to limit the search to.
+            criteria: Exact match criteria. A dict of IRI, value pairs, where
+                the IRIs refer to data properties on the resource
+                match. The IRIs may use any prefix defined in
+                `ts`. E.g. if the prefix `dcterms` is in `ts`, it is
+                expanded and the match criteria `dcterms:title` is
+                correctly parsed.
+            regex: Like `criteria` but the values in the provided dict
+                are regular expressions used for the matching.
+            flags: Flags passed to regular expressions.
+                - `s`: Dot-all mode. The . matches any character.  The default
+                  doesn't match newline or carriage return.
+                - `m`: Multi-line mode. The ^ and $ characters matches beginning
+                  or end of line instead of beginning or end of string.
+                - `i`: Case-insensitive mode.
+                - `q`: Special characters representing themselves.
+            skipblanks: Whether to skip blank nodes.
+
+        Returns:
+            tabular.Table of matched resources.
+
+        Examples:
+            List all data resources:
+
+                gr.search()
+
+            List all resources with John Doe as `contactPoint`:
+
+                gr.search(criteria={"contactPoint.hasName": "John Doe"})
+
+            List all samples:
+
+                gr.search(type=CHAMEO.Sample)
+
+            List all datasets with John Doe as `contactPoint` AND are
+            measured on a given sample:
+
+                gr.search(
+                    type=DCAT.Dataset,
+                    criteria={
+                        "contactPoint.hasName": "John Doe",
+                        "fromSample": SAMPLE.batch2/sample3,
+                    },
+                )
+
+            List all datasets who's title matches the regular expression
+            "[Mm]agnesium":
+
+                gr.search(
+                    type=DCAT.Dataset, regex={"title": "[Mm]agnesium"},
+                )
+
+        SeeAlso:
+            [resource type]: https://emmc-asbl.github.io/tripper/latest/datadoc/introduction/#resource-types
+
+        """
+        query = make_query(
+            ts=self.ts,
+            type=type,
+            criteria=criteria,
+            regex=regex,
+            flags=flags,
+            query_type="SELECT DISTINCT",
+        )
+        updated = self.update_sparql_query(query)
+        iris = [iri[0] for iri in self.ts.query(updated)]
+
+        if skipblanks:
+            iris = [iri for iri in iris if not iri.startswith("_:")]
+
+        dicts = [acquire(self.ts, iri, context=self.context) for iri in iris]
+        td = TableDoc.fromdicts(dicts, context=self.context)
+        simplified = self.simplify_iris(td.data)
+        return Table(headers=td.headers, rows=simplified)

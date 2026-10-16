@@ -11,7 +11,8 @@ authors = [
 ]
 requires-python = ">=3.12"
 dependencies = [
-    "tripper[datadoc] @ git+https://github.com/EMMC-ASBL/tripper.git@master",
+    #"tripper[datadoc] @ git+https://github.com/EMMC-ASBL/tripper.git@master",
+    "physmetdoc @ git+https://github.com/SINTEF/PhysMetDoc.git@main",
 ]
 
 [project.optional-dependencies]
