@@ -10,6 +10,7 @@ from tabular import Table
 from tripper import Namespace, Session, Triplestore
 from tripper.datadoc import Context, TableDoc, acquire
 from tripper.datadoc.dataset import make_query
+from tripper.errors import NoSuchIRIError
 
 PathType = str | Path
 
@@ -145,17 +146,21 @@ class Graphia:
                 if iri.startswith("_:") or iri.startswith("@"):
                     retval.append(iri)  # don't try to simplify blank nodes
                 else:
-                    for prefix, ns in self.prefixes.items():
-                        print("-", prefix, ns, ":", iri)
-                        if iri.startswith(str(ns)):
-                            retval.append(f"{prefix}:{ns(iri)}")
-                            break
-                        if iri.startswith(f"{prefix}:"):
-                            fulliri = f"{ns}{iri[len(prefix)+1:]}"
-                            retval.append(f"{prefix}:{ns(fulliri)}")
-                            break
-                    else:
-                        retval.append(self.context.prefixed(iri, strict=False))
+                    try:
+                        for prefix, ns in self.prefixes.items():
+                            if iri.startswith(str(ns)):
+                                retval.append(f"{prefix}:{ns(iri)}")
+                                break
+                            if iri.startswith(f"{prefix}:"):
+                                fulliri = f"{ns}{iri[len(prefix)+1:]}"
+                                retval.append(f"{prefix}:{ns(fulliri)}")
+                                break
+                        else:
+                            retval.append(
+                                self.context.prefixed(iri, strict=False)
+                            )
+                    except NoSuchIRIError:
+                        retval.append(iri)
             elif isinstance(iri, Sequence):
                 retval.append(self.simplify_iris(iri))
             elif isinstance(iri, Mapping):
