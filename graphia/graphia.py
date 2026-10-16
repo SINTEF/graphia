@@ -138,7 +138,7 @@ class Graphia:
                 )
         return retval
 
-    def query(self, query: str) -> list:
+    def query(self, query: str) -> Table:
         """Execute SPARQL query.
 
         The query is translated from human readable form and the results to
@@ -146,7 +146,13 @@ class Graphia:
         """
         updated = self.update_sparql_query(query)
         result = self.ts.query(updated)
-        return self.simplify_iris(result)
+        headers = []
+        if result:
+            if m := re.match(r"\s*SELECT (DISTINCT)?(.*)WHERE\s+{", updated):
+                headers = m.groups()[1].strip().split()
+            if len(headers) != len(result[0]):
+                headers = ["h{i}" for i in range(len(result[0]))]
+        return Table(headers=headers, rows=self.simplify_iris(result))
 
     def search(
         self,
