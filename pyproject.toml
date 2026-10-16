@@ -9,7 +9,7 @@ authors = [
     { name = "Tor S. Haugland", email = "tor.haugland@sintef.no" },
     { name = "Sylvain Gouttebroze", email = "sylvain.gouttebroze@sintef.no" },
 ]
-requires-python = ">=3.12"
+requires-python = ">=3.10"
 dependencies = [
     #"tripper[datadoc] @ git+https://github.com/EMMC-ASBL/tripper.git@master",
     "physmetdoc @ git+https://github.com/SINTEF/PhysMetDoc.git@main",
