@@ -64,9 +64,9 @@ SELECT DISTINCT ?workflow ?designation ?temper ?url WHERE {
   ?sample micro:temper ?temper .
   ?workflow emmo:hasInput ?sample .
   ?workflow a emmo:Workflow .
-  #?workflow emmo:hasOutput ?dataset .
-  #?dataset dcat:distribution ?distribution .
-  #?distribution dcat:accessURL ?url .
+  ?workflow emmo:hasOutput ?dataset .
+  ?dataset dcat:distribution ?distribution .
+  ?distribution dcat:accessURL ?url .
 }
 """)
 print()
