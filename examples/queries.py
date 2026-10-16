@@ -57,18 +57,19 @@ print("Who has been doing these experiments:")
 print(table3)
 
 
-# Where can I download the results
+# Where can I download the results (only show .png files)
 table4 = gr.query("""
-SELECT DISTINCT ?workflow ?designation ?temper ?url WHERE {
+SELECT DISTINCT ?measurement ?designation ?temper ?url WHERE {
   ?sample micro:alloyDesignation ?designation .
   ?sample micro:temper ?temper .
-  ?workflow emmo:hasInput ?sample .
-  ?workflow a emmo:Workflow .
-  ?workflow emmo:hasOutput ?dataset .
+  ?measurement emmo:hasInput ?sample .
+  ?measurement a emmo:Measurement .
+  ?measurement emmo:hasOutput ?dataset .
   ?dataset dcat:distribution ?distribution .
-  ?distribution dcat:accessURL ?url .
+  ?distribution dcat:downloadURL ?url .
+  ?distribution dcterms:format "png" .
 }
 """)
 print()
-print("Alloy designations and tempers we have results for:")
+print("Measurements on the Grand ARM for which we have png files:")
 print(table4)
