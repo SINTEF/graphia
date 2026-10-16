@@ -20,7 +20,8 @@ gr.context.sync_prefixes(gr.ts, update=False)  # type: ignore
 
 # List all measurements with Grand ARM
 criteria = {
-    "rdf:type": "emmo:Measurement", "emmo:hasInterpreter": "nortem:GARM300F2"
+    "rdf:type": "emmo:Measurement",
+    "emmo:hasInterpreter": "nortem:GARM300F2",
 }
 table1 = gr.search(criteria=criteria)
 print()

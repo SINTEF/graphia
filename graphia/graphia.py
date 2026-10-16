@@ -3,7 +3,7 @@
 import os
 import re
 from pathlib import Path
-from typing import Mapping, Optional, Sequence
+from typing import Iterable, Mapping, Optional, Sequence
 
 import yaml
 from tabular import Table
@@ -11,8 +11,8 @@ from tripper import Namespace, Session, Triplestore
 from tripper.datadoc import Context, TableDoc, acquire
 from tripper.datadoc.dataset import make_query
 
-
 PathType = str | Path
+
 
 class ConfigError(Exception):
     """Configuration error."""
@@ -49,10 +49,10 @@ class Graphia:
             confdir = os.environ.get("GRAPHIA_CONFDIR")
         if not confdir:
             confdir = Path.home() / ".config" / "graphia"
-        if not confdir.exists():
+        if not Path(confdir).exists():
             confdir = Path(__file__).resolve().parent / "data"
 
-        self.confdir = confdir
+        self.confdir = Path(confdir)
 
         configfile = self.confdir / "default_session.yaml"
         self.session = Session(configfile)
@@ -131,7 +131,7 @@ class Graphia:
 
         return query
 
-    def simplify_iris(self, iris: Sequence) -> list:
+    def simplify_iris(self, iris: Iterable) -> list:
         """Convert all IRIs in the (possible nested) sequence `iris` to CURIEs.
 
         For prefixes to namespaces that needs translations, IRIs will be
@@ -156,8 +156,7 @@ class Graphia:
             elif isinstance(iri, Mapping):
                 keys = self.simplify_iris(iri.keys())
                 values = self.simplify_iris(iri.values())
-                d = {k: v for k, v in zip(keys, values)}
-                retval.append(d)
+                retval.append(dict(zip(keys, values)))
             else:
                 raise TypeError(
                     "Elements in `iris` must be either strings or sequences. "
@@ -173,7 +172,7 @@ class Graphia:
         """
         updated = self.update_sparql_query(query)
         result = self.ts.query(updated)
-        headers = []
+        headers: list[str] = []
         if result:
             if m := re.match(r"\s*SELECT (DISTINCT)?(.*)WHERE\s+{", updated):
                 headers = m.groups()[1].strip().split()
