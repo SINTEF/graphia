@@ -34,8 +34,8 @@ def test_load_triplestore():
     triples = list(gr.ts.triples(predicate=RDF.type, object=EMMO.Dataset))
     assert len(triples) == 70
 
-if 1:
-#def test_all_iris():
+
+def test_all_iris():
     """Test all_iris() method."""
     gr = Graphia()
     subj, pred = gr.all_iris()
@@ -43,6 +43,7 @@ if 1:
     assert pred[
         "https://w3id.org/emmo#EMMO_c4bace1d_4db0_4cd3_87e9_18122bae2840"
     ] == "emmo:hasOutput"
+
 
 def test_update_sparql_query():
     """Test update_sparql_query()."""
