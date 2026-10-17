@@ -30,7 +30,7 @@ for iri in table1["@id"]:
     print("  -", iri)
 
 
-# What alloy designations and tempers do we have results from?
+# What alloy designations and tempers are these results from?
 table2 = gr.query("""
 SELECT DISTINCT ?designation ?temper WHERE {
   ?sample micro:alloyDesignation ?designation .
@@ -43,7 +43,7 @@ print("Alloy designations and tempers we have results for:")
 print(table2)
 
 
-# Who have been doint these measurements?
+# Who has performed these measurements?
 table3 = gr.query("""
 SELECT DISTINCT ?designation ?temper ?operator WHERE {
   ?sample micro:alloyDesignation ?designation .
@@ -54,11 +54,11 @@ SELECT DISTINCT ?designation ?temper ?operator WHERE {
 }
 """)
 print()
-print("Who has been doing these experiments:")
+print("Who has performed these experiments:")
 print(table3)
 
 
-# Where can I download the results (only show .png files)
+# Where can I download the results (limit to .png files)
 table4 = gr.query("""
 SELECT ?measurement ?designation ?temper ?url
 WHERE {

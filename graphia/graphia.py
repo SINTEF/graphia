@@ -10,7 +10,6 @@ from tabular import Table
 from tripper import Namespace, Session, Triplestore
 from tripper.datadoc import Context, TableDoc, acquire
 from tripper.datadoc.dataset import make_query
-from tripper.errors import NoSuchIRIError
 
 PathType = str | Path
 
@@ -132,15 +131,17 @@ class Graphia:
 
         return query
 
-    def all_iris(self) -> (dict, dict):
+    def all_iris(self) -> tuple[dict, dict]:
         """Return two dicts.
 
         The first maps subject IRIs to human CURIEs.
         The second maps predicate IRIs to human CURIEs.
         """
-        irinames = {}  # maps IRIs to names
+        # pylint: disable=too-many-branches
+        irinames: dict[str, str] = {}  # maps IRIs to names
         for prefix, ns in self.prefixes.items():
             if isinstance(ns, Namespace):
+                # pylint: disable=protected-access
                 ns._update_iris(
                     triplestore=ns._triplestore,
                     reload=ns._reload,
