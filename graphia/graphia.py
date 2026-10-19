@@ -134,7 +134,7 @@ class Graphia:
     def all_iris(self) -> tuple[dict, dict]:
         """Return two dicts.
 
-        The first maps subject IRIs to human CURIEs.
+        The first maps entity (subject and object) IRIs to human CURIEs.
         The second maps predicate IRIs to human CURIEs.
         """
         # pylint: disable=too-many-branches
@@ -150,28 +150,35 @@ class Graphia:
                 for name, iri in ns._iris.items():
                     irinames.setdefault(iri, f"{prefix}:{name}")
 
+        def get_curie(iri: str) -> str:
+            """Helper to resolve an IRI using caches, prefixes, or namespaces."""
+            if iri in irinames:
+                return irinames[iri]
+
+            for prefix, ns in self.prefixes.items():
+                if iri.startswith(str(ns)):
+                    try:
+                        return f"{prefix}:{ns(iri)}"
+                    except Exception:
+                        pass
+
+            for prefix, ns in self.ts.namespaces.items():
+                if iri.startswith(str(ns)):
+                    return f"{prefix}:{iri[len(ns):]}"
+
+            return iri
+            
         subj, pred = {}, {}
-        for s, p, _ in self.ts.triples():
-            if s.startswith("_:"):
-                pass
-            elif s in irinames:
-                subj[s] = irinames[s]
-            else:
-                for prefix, ns in self.ts.namespaces.items():
-                    if s.startswith(str(ns)):
-                        subj[s] = f"{prefix}:{s[len(ns):]}"
-                        break
-                else:
-                    subj[s] = s
-            if p in irinames:
-                pred[p] = irinames[p]
-            else:
-                for prefix, ns in self.ts.namespaces.items():
-                    if p.startswith(str(ns)):
-                        pred[p] = f"{prefix}:{p[len(ns):]}"
-                        break
-                else:
-                    pred[p] = p
+
+        for s, p, o in self.ts.triples():
+            if isinstance(s, str) and not s.startswith("_:"):
+                subj[s] = get_curie(s)
+
+            if isinstance(p, str):
+                pred[p] = get_curie(p)
+
+            if isinstance(o, str) and not o.startswith("_:") and o.startswith("http"):
+                subj[o] = get_curie(o)
 
         return subj, pred
 
