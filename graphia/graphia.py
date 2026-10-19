@@ -5,6 +5,7 @@ import re
 from pathlib import Path
 from typing import Iterable, Mapping, Optional, Sequence
 
+import tripper
 import yaml
 from tabular import Table
 from tripper import Namespace, Session, Triplestore
@@ -157,6 +158,15 @@ class Graphia:
 
             for prefix, ns in self.prefixes.items():
                 if iri.startswith(str(ns)):
+                    if hasattr(tripper, prefix.upper()):
+                        try:
+                            special_ns = getattr(tripper, prefix.upper())
+                            translated = special_ns(iri)
+                            if translated and translated != iri:
+                                return f"{prefix}:{translated}"
+                        except Exception:
+                            pass
+
                     try:
                         return f"{prefix}:{ns(iri)}"
                     except Exception:
