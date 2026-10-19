@@ -218,10 +218,10 @@ class Graphia:
         result = self.ts.query(updated)
         headers: list[str] = []
         if result:
-            if m := re.match(r"\s*SELECT (DISTINCT)?(.*)WHERE\s+{", updated):
+            if m := re.search(r"\s*SELECT (DISTINCT)?(.*?)WHERE\s+{", updated, re.IGNORECASE | re.DOTALL):
                 headers = m.groups()[1].strip().split()
             if len(headers) != len(result[0]):
-                headers = ["h{i}" for i in range(len(result[0]))]
+                headers = [f"h{i}" for i in range(len(result[0]))]
         return Table(headers=headers, rows=self.simplify_iris(result))
 
     def search(
