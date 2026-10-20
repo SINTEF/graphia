@@ -92,7 +92,10 @@ class Graphia:
 
         prefixes = {}
         for prefix, args in conf.get("translated_namespaces", {}).items():
-            prefixes[prefix] = Namespace(**args)
+            if hasattr(tripper, prefix.upper()):
+                prefixes[prefix] = getattr(tripper, prefix.upper())
+            else:
+                prefixes[prefix] = Namespace(**args)
 
         # No errors has occured, then we update the instance
         self.triplestore_name = name
