@@ -5,6 +5,7 @@ import re
 from pathlib import Path
 from typing import Iterable, Mapping, Optional, Sequence
 
+import tripper
 import yaml
 from tabular import Table
 from tripper import Namespace, Session, Triplestore
@@ -138,30 +139,42 @@ class Graphia:
         The second maps predicate IRIs to human CURIEs.
         """
         # pylint: disable=too-many-branches
-        irinames: dict[str, str] = {}  # maps IRIs to names
+        irinames: dict[str, str] = {}
+        suffix_names: dict[str, str] = {}
+
         for prefix, ns in self.prefixes.items():
             if isinstance(ns, Namespace):
                 # pylint: disable=protected-access
-                ns._update_iris(
-                    triplestore=ns._triplestore,
-                    reload=ns._reload,
-                    format=ns._format,
-                )
-                for name, iri in ns._iris.items():
+                try:
+                    ns._update_iris(
+                        triplestore=ns._triplestore,
+                        reload=ns._reload,
+                        format=ns._format,
+                    )
+                except Exception:
+                    pass
+                for name, iri in getattr(ns, "_iris", {}).items():
                     irinames.setdefault(iri, f"{prefix}:{name}")
+                    suffix_names.setdefault(
+                        iri.split("#")[-1].split("/")[-1], f"{prefix}:{name}"
+                    )
 
-        try:
-            from tripper import EMMO
-
-            for name, iri in getattr(EMMO, "_iris", {}).items():
-                irinames.setdefault(iri, f"emmo:{name}")
-        except Exception:
-            pass
+            if hasattr(tripper, prefix.upper()):
+                builtin_ns = getattr(tripper, prefix.upper())
+                for name, iri in getattr(builtin_ns, "_iris", {}).items():
+                    irinames.setdefault(iri, f"{prefix}:{name}")
+                    suffix_names.setdefault(
+                        iri.split("#")[-1].split("/")[-1], f"{prefix}:{name}"
+                    )
 
         def get_curie(iri: str) -> str:
             """Helper to resolve an IRI using caches, prefixes, or namespaces."""
             if iri in irinames:
                 return irinames[iri]
+
+            suffix = iri.split("#")[-1].split("/")[-1]
+            if suffix and suffix in suffix_names:
+                return suffix_names[suffix]
 
             for prefix, ns in self.prefixes.items():
                 if iri.startswith(str(ns)):
@@ -172,7 +185,7 @@ class Graphia:
 
             for prefix, ns in self.ts.namespaces.items():
                 if iri.startswith(str(ns)):
-                    return f"{prefix}:{iri[len(ns):]}"
+                    return f"{prefix}:{iri[len(str(ns)):]}"
 
             return iri
 
