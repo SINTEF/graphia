@@ -5,7 +5,6 @@ import re
 from pathlib import Path
 from typing import Iterable, Mapping, Optional, Sequence
 
-import tripper
 import yaml
 from tabular import Table
 from tripper import Namespace, Session, Triplestore
@@ -92,10 +91,7 @@ class Graphia:
 
         prefixes = {}
         for prefix, args in conf.get("translated_namespaces", {}).items():
-            if hasattr(tripper, prefix.upper()):
-                prefixes[prefix] = getattr(tripper, prefix.upper())
-            else:
-                prefixes[prefix] = Namespace(**args)
+            prefixes[prefix] = Namespace(**args)
 
         # No errors has occured, then we update the instance
         self.triplestore_name = name
@@ -138,7 +134,7 @@ class Graphia:
     def all_iris(self) -> tuple[dict, dict]:
         """Return two dicts.
 
-        The first maps entity (subject and object) IRIs to human CURIEs.
+        The first maps entities (subject and object) IRIs to human CURIEs.
         The second maps predicate IRIs to human CURIEs.
         """
         # pylint: disable=too-many-branches
@@ -153,6 +149,14 @@ class Graphia:
                 )
                 for name, iri in ns._iris.items():
                     irinames.setdefault(iri, f"{prefix}:{name}")
+
+        try:
+            from tripper import EMMO
+
+            for name, iri in getattr(EMMO, "_iris", {}).items():
+                irinames.setdefault(iri, f"emmo:{name}")
+        except Exception:
+            pass
 
         def get_curie(iri: str) -> str:
             """Helper to resolve an IRI using caches, prefixes, or namespaces."""
@@ -171,7 +175,7 @@ class Graphia:
                     return f"{prefix}:{iri[len(ns):]}"
 
             return iri
-            
+
         subj, pred = {}, {}
 
         for s, p, o in self.ts.triples():
@@ -181,7 +185,11 @@ class Graphia:
             if isinstance(p, str):
                 pred[p] = get_curie(p)
 
-            if isinstance(o, str) and not o.startswith("_:") and o.startswith("http"):
+            if (
+                isinstance(o, str)
+                and not o.startswith("_:")
+                and o.startswith("http")
+            ):
                 subj[o] = get_curie(o)
 
         return subj, pred
@@ -229,7 +237,11 @@ class Graphia:
         result = self.ts.query(updated)
         headers: list[str] = []
         if result:
-            if m := re.search(r"\s*SELECT (DISTINCT)?(.*?)WHERE\s+{", updated, re.IGNORECASE | re.DOTALL):
+            if m := re.search(
+                r"\s*SELECT (DISTINCT)?(.*?)WHERE\s+{",
+                updated,
+                re.IGNORECASE | re.DOTALL,
+            ):
                 headers = m.groups()[1].strip().split()
             if len(headers) != len(result[0]):
                 headers = [f"h{i}" for i in range(len(result[0]))]
