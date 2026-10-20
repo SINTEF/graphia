@@ -7,7 +7,7 @@ from typing import Iterable, Mapping, Optional, Sequence
 
 import yaml
 from tabular import Table
-from tripper import EMMO, Namespace, Session, Triplestore
+from tripper import Namespace, Session, Triplestore
 from tripper.datadoc import Context, TableDoc, acquire
 from tripper.datadoc.dataset import make_query
 
@@ -93,7 +93,7 @@ class Graphia:
         for prefix, args in conf.get("translated_namespaces", {}).items():
             prefixes[prefix] = Namespace(**args)
 
-        prefixes["emmo"] = EMMO
+        prefixes["emmo"] = tripper.EMMO
 
         # No errors has occured, then we update the instance
         self.triplestore_name = name
