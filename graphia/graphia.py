@@ -93,8 +93,6 @@ class Graphia:
         for prefix, args in conf.get("translated_namespaces", {}).items():
             prefixes[prefix] = Namespace(**args)
 
-        prefixes["emmo"] = tripper.EMMO
-
         # No errors has occured, then we update the instance
         self.triplestore_name = name
         self.ts = ts
