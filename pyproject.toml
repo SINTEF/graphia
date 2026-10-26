@@ -16,19 +16,12 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-testing = [
-    "pytest==9.1.1",
-    "pytest-cov==7.1.0",
+webapp = [
+    "panelini @ git+https://github.com/opensemanticworld/panelini.git@feat-sparql-filter",
 ]
-pre-commit = [
-    "graphia[testing]",
-    "pre-commit==4.6.2",
-    "pylint==4.0.8",
-]
-dev = [
-    "graphia[pre-commit]",
-    "virtualenvwrapper==6.1.1",
-]
+testing = ["pytest==9.1.1", "pytest-cov==7.1.0"]
+pre-commit = ["graphia[testing]", "pre-commit==4.6.2", "pylint==4.0.8"]
+dev = ["graphia[pre-commit]", "virtualenvwrapper==6.1.1"]
 
 
 [build-system]
@@ -37,10 +30,7 @@ build-backend = "hatchling.build"
 
 
 [tool.hatch.build]
-include = [
-    "graphia",
-    "graphia/data/*.yaml",
-]
+include = ["graphia", "graphia/data/*.yaml"]
 
 [tool.hatch.metadata]
 allow-direct-references = true

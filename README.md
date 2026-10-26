@@ -20,3 +20,7 @@ That can be done with:
 
     pip install -e .[pre-commit]
     pre-commit install
+
+
+## Run the web application
+Make sure to install the components needed for the webapp `pip install -e ".[webapp]"` and run it from the `webapp` folder using `panel serve app.py`

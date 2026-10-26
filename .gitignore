@@ -1,3 +1,4 @@
 *~
 .venv
 graphia.egg-info/
+__pycache__
