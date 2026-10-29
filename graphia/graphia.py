@@ -2,14 +2,15 @@
 
 import os
 import re
+from collections.abc import Iterable, Mapping, Sequence
 from pathlib import Path
-from typing import Iterable, Mapping, Optional, Sequence
 
 import yaml
-from tabular import Table
 from tripper import Namespace, Session, Triplestore
 from tripper.datadoc import Context, TableDoc, acquire
 from tripper.datadoc.dataset import make_query
+
+from tabular import Table
 
 PathType = str | Path
 
@@ -33,11 +34,11 @@ class Graphia:
 
     """
 
-    def __init__(self, confdir: Optional[PathType] = None) -> None:
+    def __init__(self, confdir: PathType | None = None) -> None:
         self.ts: Triplestore = None
 
         # Name of currently selected triplestore
-        self.triplestore_name: Optional[str] = None
+        self.triplestore_name: str | None = None
 
         # Maps prefixes to namespace objects
         # Only required for namespaces that need translations (e.g. emmo)
@@ -68,7 +69,7 @@ class Graphia:
         """Return list with the names of all configured triplestores."""
         return self.session.get_names()
 
-    def load_triplestore(self, name: Optional[str] = None) -> None:
+    def load_triplestore(self, name: str | None = None) -> None:
         """Load triplestore with given name.
 
         This also (re)sets up the context and prefixes.
@@ -151,7 +152,9 @@ class Graphia:
                     irinames.setdefault(iri, f"{prefix}:{name}")
 
         def get_curie(iri: str) -> str:
-            """Helper to resolve an IRI using caches, prefixes, or namespaces."""
+            """Helper to resolve an IRI using caches, prefixes, or
+            namespaces.
+            """
             if iri in irinames:
                 return irinames[iri]
 
@@ -159,12 +162,12 @@ class Graphia:
                 if iri.startswith(str(ns)):
                     try:
                         return f"{prefix}:{ns(iri)}"
-                    except Exception:
+                    except Exception:  # noqa: S110
                         pass
 
             for prefix, ns in self.ts.namespaces.items():
                 if iri.startswith(str(ns)):
-                    return f"{prefix}:{iri[len(ns):]}"
+                    return f"{prefix}:{iri[len(ns) :]}"
 
             return iri
 
@@ -211,7 +214,7 @@ class Graphia:
             elif isinstance(iri, Mapping):
                 keys = self.simplify_iris(iri.keys())
                 values = self.simplify_iris(iri.values())
-                retval.append(dict(zip(keys, values)))
+                retval.append(dict(zip(keys, values, strict=True)))
             else:
                 raise TypeError(
                     "Elements in `iris` must be either strings or sequences. "
@@ -241,10 +244,10 @@ class Graphia:
 
     def search(
         self,
-        type: Optional[str] = None,
-        criteria: Optional[dict] = None,
-        regex: Optional[dict] = None,
-        flags: Optional[str] = None,
+        type: str | None = None,
+        criteria: dict | None = None,
+        regex: dict | None = None,
+        flags: str | None = None,
         skipblanks: bool = True,
     ) -> Table:
         # pylint: disable=line-too-long

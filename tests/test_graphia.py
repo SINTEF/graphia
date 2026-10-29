@@ -1,6 +1,6 @@
 """Test Graphia"""
 
-# pylint: disable=invalid-name
+# ruff: noqa: S101
 
 from tripper import DCTERMS, EMMO, RDF
 
@@ -40,9 +40,10 @@ def test_all_iris():
     gr = Graphia()
     subj, pred = gr.all_iris()
     assert subj["http://www.w3.org/ns/org#NFR"] == "org:NFR"
-    assert pred[
-        "https://w3id.org/emmo#EMMO_c4bace1d_4db0_4cd3_87e9_18122bae2840"
-    ] == "emmo:hasOutput"
+    assert (
+        pred["https://w3id.org/emmo#EMMO_c4bace1d_4db0_4cd3_87e9_18122bae2840"]
+        == "emmo:hasOutput"
+    )
 
 
 def test_update_sparql_query():

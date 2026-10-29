@@ -1,6 +1,6 @@
 """Demonstrate some queries"""
 
-# pylint: disable=invalid-name
+# ruff: noqa: T201
 
 from pathlib import Path
 

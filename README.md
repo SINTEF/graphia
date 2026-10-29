@@ -3,6 +3,25 @@ Webapp for viewing and exploring knowledge graphs.
 
 
 ## Install
+
+### Using uv (preferred)
+Create a virtual environment and install Graphia
+
+    uv venv
+    uv sync
+    uv sync --extra dev  # for developers
+
+Optionally activate the environment to run tools and scripts as with pip
+
+    source .venv/bin/activate
+    pytest
+
+Alternatively, run tools or scripts with uv. For example
+
+    uv run pytest
+
+
+### Using pip
 Create a virtual environment
 
     python -m venv .venv

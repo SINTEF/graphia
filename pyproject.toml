@@ -9,10 +9,10 @@ authors = [
     { name = "Tor S. Haugland", email = "tor.haugland@sintef.no" },
     { name = "Sylvain Gouttebroze", email = "sylvain.gouttebroze@sintef.no" },
 ]
-requires-python = ">=3.10"
+requires-python = ">=3.11"
 dependencies = [
-    #"tripper[datadoc] @ git+https://github.com/EMMC-ASBL/tripper.git@master",
-    "physmetdoc @ git+https://github.com/SINTEF/PhysMetDoc.git@main",
+    #"physmetdoc[excel,callfunctions] @ git+https://github.com/SINTEF/PhysMetDoc.git@main",
+    "physmetdoc[excel,callfunctions]>=0.1.0",
 ]
 
 [project.optional-dependencies]
@@ -23,10 +23,11 @@ testing = [
 pre-commit = [
     "graphia[testing]",
     "pre-commit==4.6.2",
-    "pylint==4.0.8",
+    "ruff==0.17.3",
 ]
 dev = [
     "graphia[pre-commit]",
+    "ipython>=9.0",
     "virtualenvwrapper==6.1.1",
 ]
 
@@ -45,17 +46,18 @@ include = [
 [tool.hatch.metadata]
 allow-direct-references = true
 
-[tool.pylint.messages_control]
-disable = ["too-few-public-methods", "redefined-builtin"]
-
-[tool.black]
-line-length = 79
-
 [tool.ruff]
 line-length = 79
 
 [tool.ruff.lint]
-select = ["E", "F", "I", "UP", "B", "SIM"]
+# E/F = standard syntax errors/style (defaults)
+# I = import sorting (isort replacement)
+# UP = modern Python syntax upgrades
+# B = common design flaws, code smells, and subtle bugs
+# SIM = simplification opportunities
+# S = security (bandit replacement)
+# T20 = debugging statement checks (debug-statements replacement)
+select = ["E", "F", "I", "UP", "B", "SIM", "S", "T20"]
 
 [tool.ruff.format]
 quote-style = "double"

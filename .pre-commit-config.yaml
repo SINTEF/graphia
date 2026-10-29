@@ -1,7 +1,5 @@
 # To install the git pre-commit hook run:
 #   pre-commit install
-# To update the pre-commit hooks run:
-#   pre-commit autoupdate && pre-commit autoupdate --freeze --repo https://github.com/SINTEF/ci-cd
 
 # pre-commit.ci
 ci:
@@ -13,7 +11,6 @@ ci:
   autoupdate_branch: "main"
   autoupdate_commit_msg: "[pre-commit.ci] pre-commit autoupdate"
   autoupdate_schedule: "weekly"
-  skip: [pylint, pylint-tests]
   submodules: false
 
 # hooks
@@ -32,28 +29,6 @@ repos:
         exclude: ^.*\.(svg|drawio)$
         args: [--markdown-linebreak-ext=md]
 
-  - repo: https://github.com/PyCQA/isort
-    rev: 9.0.0b2
-    hooks:
-      - id: isort
-        args:
-          - --profile=black
-          - --filter-files
-          - --skip-gitignore
-
-  - repo: https://github.com/psf/black-pre-commit-mirror
-    rev: 26.5.1
-    hooks:
-      - id: black
-        args: [--line-length=79]
-
-  - repo: https://github.com/PyCQA/bandit
-    rev: 1.9.4
-    hooks:
-      - id: bandit
-        args: ["-r"]
-        files: ^tripper/.*$
-
   - repo: https://github.com/pre-commit/mirrors-mypy
     rev: v2.3.0
     hooks:
@@ -64,50 +39,23 @@ repos:
           - "types-pyyaml"
           - "pydantic"
 
-  #- repo: https://github.com/SINTEF/ci-cd
-  #  rev: v2.10.0
-  #  hooks:
-  #  - id: docs-api-reference
-  #    args:
-  #    - --package-dir=tripper
-  #    - --unwanted-folder=__pycache__
-  #    - --unwanted-folder=context
-  #    - --unwanted-folder=old
-  #  # - id: docs-landing-page
-  #  # - id: update-pyproject
-
-  - repo: local
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    # Use the desired Ruff release tag/rev
+    rev: v0.17.2
     hooks:
-      # The doctests are too slow for running them in pre-commit.
-      # Run it as a test instead.
-      # - id: markdown-doctest
-      #   name: Run doctest on markdown documentation
-      #   entry: .hooks/markdown-doctest.sh
-      #   language: script
-      #   pass_filenames: false
-      #   stages: ["pre-commit"]
+      # Run the linter (with optional auto-fix)
+      - id: ruff-check
+        args: [ --fix ]
+      # Run the formatter
+      - id: ruff-format
 
-      - id: pylint
-        name: pylint
-        entry: pylint
-        args:
-          - --rcfile=pyproject.toml
-          - --disable=fixme
-          - --max-line-length=79
-        language: python
-        types: [python]
-        require_serial: true
-        files: ^.*$
-        exclude: ^tests/.*$
-
-      - id: pylint-tests
-        name: pylint - tests
-        entry: pylint
-        args:
-          - --rcfile=pyproject.toml
-          - --disable=import-outside-toplevel,redefined-outer-name,fixme
-          - --max-line-length=79
-        language: python
-        types: [python]
-        require_serial: true
-        files: ^tests/.*$
+#  - repo: local
+#    hooks:
+#      # The doctests are too slow for running them in pre-commit.
+#      # Run it as a test instead.
+#      - id: markdown-doctest
+#        name: Run doctest on markdown documentation
+#        entry: .hooks/markdown-doctest.sh
+#        language: script
+#        pass_filenames: false
+#        stages: ["pre-commit"]

@@ -1,5 +1,7 @@
 """Example use of tripper"""
 
+# ruff: noqa: T201
+
 from tripper import DCTERMS, EMMO, RDF, Session
 from tripper.datadoc import TableDoc, acquire, get_context, search
 
